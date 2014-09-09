@@ -121,7 +121,6 @@
       "components/angular-mocks/angular-mocks.js",
       "src/config/test.js",
       "src/*.js",
-      "test/svc-http-mock.js",
       "test/unit/**/*spec.js"
     ]
   }));

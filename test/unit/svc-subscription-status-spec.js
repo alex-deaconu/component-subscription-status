@@ -3,53 +3,51 @@
 
 describe("Services: subscriptionStatusService", function() {
 
+  var $httpBackend;
+
   beforeEach(module("risevision.widget.common.subscription-status.service"));
 
-  beforeEach(module(function ($provide) {
-    $provide.service("$q", function() {return Q;});
+  beforeEach(inject(function($injector) {
+    // Set up the mock http service responses
+    $httpBackend = $injector.get("$httpBackend");
   }));
+
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+  });
 
   it("should exist", function(done) {
     inject(function(subscriptionStatusService) {
       expect(subscriptionStatusService).be.defined;
+      done();
+    });
+  });
+
+  it("get function should exist", function(done) {
+    inject(function(subscriptionStatusService) {
+      expect(subscriptionStatusService.get).be.defined;
 
       done();
     });
   });
 
-  it("should call product status api", function(done) {
+  it("should return a promise", function(done) {
     inject(function(subscriptionStatusService) {
+      expect(subscriptionStatusService.get("1", "12345")).eventually.be.defined;
+      done();
+    });
+  });
+
+  it("should fetch subscription status", function(done) {
+    inject(function(subscriptionStatusService) {
+
+      $httpBackend.whenGET("https://store-dot-rvaserver2.appspot.com/v1/company/12345/product/status?pc=1").respond(200, {data: ["test"]});
       subscriptionStatusService.get("1", "12345").then(function(data){
         expect(data).be.defined;
-        expect(data.status).be.equal("Free");
-        expect(data.subscribed).be.equal(true);
-
         done();
       });
-    });
-  });
-
-  it("should fail if company is invalid", function(done) {
-    inject(function(subscriptionStatusService) {
-      subscriptionStatusService.get("1", "invalid").then(function(){
-        done();
-      },
-      function(error) {
-        expect(error).be.equal("No response");
-        done();
-      });
-    });
-  });
-
-  it("should return expired product", function(done) {
-    inject(function(subscriptionStatusService) {
-      subscriptionStatusService.get("2", "12345").then(function(data){
-        expect(data).be.defined;
-        expect(data.status).be.equal("Expired");
-        expect(data.subscribed).be.equal(false);
-
-        done();
-      });
+      $httpBackend.flush();
     });
   });
 
